@@ -99,5 +99,14 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     helper.insert(note);
   }
 
-  update() async {}
+  update() async {
+    Note note = Note(
+      id: widget.note.id,
+      title: titleEditingController.text,
+      dateTimeCreated: widget.note.dateTimeCreated,
+      noteDetail: textEditingController.text,
+    );
+    int updatedId = await DatabaseHelper.instance.update(note);
+    print(updatedId);
+  }
 }

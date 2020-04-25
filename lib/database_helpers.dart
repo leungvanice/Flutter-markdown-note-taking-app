@@ -81,4 +81,10 @@ class DatabaseHelper {
         res.isNotEmpty ? res.map((note) => Note.fromMap(note)).toList() : [];
     return list;
   }
+
+  Future<int> update(Note note) async {
+    final db = await database; 
+    int id = await db.update(tableNote, note.toMap(), where: '_id = ?', whereArgs: [note.id]); 
+    return id;
+  }
 }
