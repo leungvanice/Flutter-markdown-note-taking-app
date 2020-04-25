@@ -73,4 +73,12 @@ class DatabaseHelper {
     int id = await db.insert(tableNote, note.toMap());
     return id;
   }
+
+  Future<List<Note>> queryAllNotes() async {
+    final db = await database;
+    var res = await db.query(tableNote);
+    List<Note> list =
+        res.isNotEmpty ? res.map((note) => Note.fromMap(note)).toList() : [];
+    return list;
+  }
 }

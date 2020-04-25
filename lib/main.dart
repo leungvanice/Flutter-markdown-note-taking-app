@@ -1,5 +1,4 @@
-import './widgets/textEditor.dart';
-import './widgets/preview.dart';
+import './widgets/noteList_page.dart';
 
 import 'package:flutter/material.dart';
 
@@ -11,12 +10,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MarkdownEditor(),
+      home: NoteListPage(),
       theme: ThemeData(
         highlightColor: Colors.transparent,
         splashColor: Colors.transparent,
         appBarTheme: AppBarTheme(
           color: Colors.white,
+          iconTheme: IconThemeData(
+            color: Colors.black,
+          ),
           textTheme: TextTheme(
             title: TextStyle(
               color: Colors.black,
@@ -32,41 +34,9 @@ class MyApp extends StatelessWidget {
           labelColor: Colors.black,
         ),
       ),
-    );
-  }
-}
-
-class MarkdownEditor extends StatelessWidget {
-  final TextEditingController textEditingController = TextEditingController();
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("NOTE NAME"),
-          bottom: TabBar(
-            tabs: <Widget>[
-              Tab(
-                child: Text("Edit"),
-              ),
-              Tab(
-                child: Text("Preview"),
-              ),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: <Widget>[
-            Container(
-              child: TextEditor(textEditingController),
-            ),
-            Container(
-              child: Preview(textEditingController),
-            ),
-          ],
-        ),
-      ),
+      routes:  {
+        '/note-list': (context) => NoteListPage(),
+      },
     );
   }
 }
