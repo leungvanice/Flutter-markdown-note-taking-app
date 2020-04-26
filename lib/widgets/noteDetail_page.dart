@@ -1,4 +1,4 @@
-import './textEditor.dart';
+import './edit.dart';
 import './preview.dart';
 
 import '../database_helpers.dart';
@@ -94,7 +94,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
         title: titleEditingController.text,
         dateTimeCreated: DateTime.now(),
         noteDetail: textEditingController.text);
-    DatabaseHelper helper = DatabaseHelper.instance;
+    NoteDatabaseHelper helper = NoteDatabaseHelper.instance;
     helper.insert(note);
   }
 
@@ -105,7 +105,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
       dateTimeCreated: widget.note.dateTimeCreated,
       noteDetail: textEditingController.text,
     );
-    int updatedId = await DatabaseHelper.instance.update(note);
+    int updatedId = await NoteDatabaseHelper.instance.update(note);
     print(updatedId);
   }
 }

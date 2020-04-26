@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 
 import 'package:markdown_editor/database_helpers.dart';
 
+import './createNotebook_page.dart';
 import './noteDetail_page.dart';
 
 import 'package:flutter/material.dart';
@@ -49,20 +50,41 @@ class _NoteListPageState extends State<NoteListPage> {
                 title: Text('Trash'),
               ),
               Divider(),
-              ListTile(
-                leading: Icon(Icons.library_books),
-                title: Text("FIrst Notebook"),
+              // display notebooks
+              FutureBuilder(
+                future: NotebookDatabaseHelper.instance.queryAllNotebooks(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<Notebook>> snapshot) {
+                  if (snapshot.hasData) {
+                    return Container(
+                      height: snapshot.data.length * 50.0 + 30,
+                      child: ListView(
+                        children: snapshot.data.map((notebook) {
+                          return ListTile(
+                            leading: Icon(Icons.library_books),
+                            title: Text(notebook.title),
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  } else {
+                    return Container();
+                  }
+                },
               ),
-              SizedBox(
-                height: 30,
-              ),
+
               ListTile(
                 trailing: FlatButton(
                   child: Text(
                     "+ Add Notebook",
                     style: TextStyle(fontSize: 12, color: Colors.black87),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => CreateNotebookPage()));
+                  },
                 ),
               ),
             ],
@@ -70,7 +92,7 @@ class _NoteListPageState extends State<NoteListPage> {
         ),
       ),
       body: FutureBuilder(
-        future: DatabaseHelper.instance.queryAllNotes(),
+        future: NoteDatabaseHelper.instance.queryAllNotes(),
         builder: (BuildContext context, AsyncSnapshot<List<Note>> snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(

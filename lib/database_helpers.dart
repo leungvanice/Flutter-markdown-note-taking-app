@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
@@ -8,6 +9,11 @@ final String columnId = '_id';
 final String columnTitle = 'title';
 final String columnDateTimeCreated = 'dateTimeCreated';
 final String columnNoteDetail = 'noteDetail';
+
+final String tableNotebook = 'notebooks';
+final String columnNotebookTitle = 'title';
+final String columnNotebookDateCreated = 'dateCreated';
+final String columnColorString = 'colorString';
 
 class Note {
   int id;
@@ -34,12 +40,45 @@ class Note {
   }
 }
 
-class DatabaseHelper {
+class Notebook {
+  int id;
+  String title;
+  DateTime dateCreated;
+  Color color;
+  Notebook({this.id, this.title, this.dateCreated, this.color});
+
+  static Color colorFromString(String colorString) {
+    String valueString = colorString.split('(0x')[1].split(')')[0];
+    int value = int.parse(valueString, radix: 16);
+    Color color = Color(value);
+    return color;
+  }
+
+  factory Notebook.fromMap(Map<String, dynamic> map) {
+    return Notebook(
+      id: map['_id'],
+      title: map['title'],
+      dateCreated: DateTime.parse(map['dateCreated']),
+      color: colorFromString(map['colorString']),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'dateCreated': dateCreated.toString(),
+      'colorString': color.toString(),
+    };
+  }
+}
+
+class NoteDatabaseHelper {
   static final _databaseName = "MyDatabase.db";
   static final _databaseVersion = 1;
 
-  DatabaseHelper._privateConstructor();
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+  NoteDatabaseHelper._privateConstructor();
+  static final NoteDatabaseHelper instance =
+      NoteDatabaseHelper._privateConstructor();
 
   static Database _database;
   Future<Database> get database async {
@@ -83,8 +122,59 @@ class DatabaseHelper {
   }
 
   Future<int> update(Note note) async {
-    final db = await database; 
-    int id = await db.update(tableNote, note.toMap(), where: '_id = ?', whereArgs: [note.id]); 
+    final db = await database;
+    int id = await db.update(tableNote, note.toMap(),
+        where: '_id = ?', whereArgs: [note.id]);
     return id;
+  }
+}
+
+class NotebookDatabaseHelper {
+  static final _databaseName = 'NotebookDB.db';
+  static final _databaseVersion = 1;
+
+  NotebookDatabaseHelper._();
+  static final NotebookDatabaseHelper instance = NotebookDatabaseHelper._();
+
+  static Database _database;
+  Future<Database> get database async {
+    if (_database != null) return _database;
+    _database = await _initDatabase();
+    return _database;
+  }
+
+  _initDatabase() async {
+    // The path_provider plugin gets the right directory for Android or iOS.
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, _databaseName);
+    // Open the database. Can also add an onUpdate callback parameter.
+    return await openDatabase(path,
+        version: _databaseVersion, onCreate: _onCreate);
+  }
+
+  Future _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE $tableNotebook ( 
+        $columnId INTEGER PRIMARY KEY, 
+        $columnNotebookTitle TEXT NOT NULL, 
+        $columnNotebookDateCreated TEXT NOT NULL, 
+        $columnColorString TEXT NOT NULL
+      )
+    ''');
+  }
+
+  Future<int> insert(Notebook notebook) async {
+    Database db = await database;
+    int id = await db.insert(tableNotebook, notebook.toMap());
+    return id;
+  }
+
+  Future<List<Notebook>> queryAllNotebooks() async {
+    Database db = await database;
+    var res = await db.query(tableNotebook);
+    List<Notebook> list = res.isNotEmpty
+        ? res.map((notebook) => Notebook.fromMap(notebook)).toList()
+        : [];
+    return list;
   }
 }
