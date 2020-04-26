@@ -12,10 +12,18 @@ class NoteListPage extends StatefulWidget {
 }
 
 class _NoteListPageState extends State<NoteListPage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.subject),
+          onPressed: () {
+            _scaffoldKey.currentState.openDrawer();
+          },
+        ),
         title: Text("Markdown Editor"),
         actions: <Widget>[
           IconButton(
@@ -26,6 +34,40 @@ class _NoteListPageState extends State<NoteListPage> {
             },
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.description),
+                title: Text('All Notes'),
+              ),
+              ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('Trash'),
+              ),
+              Divider(),
+              ListTile(
+                leading: Icon(Icons.library_books),
+                title: Text("FIrst Notebook"),
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              ListTile(
+                trailing: FlatButton(
+                  child: Text(
+                    "+ Add Notebook",
+                    style: TextStyle(fontSize: 12, color: Colors.black87),
+                  ),
+                  onPressed: () {},
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: FutureBuilder(
         future: DatabaseHelper.instance.queryAllNotes(),

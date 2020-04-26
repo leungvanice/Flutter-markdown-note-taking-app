@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           labelColor: Colors.black,
         ),
       ),
-      routes:  {
+      routes: {
         '/note-list': (context) => NoteListPage(),
       },
     );

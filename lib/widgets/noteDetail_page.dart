@@ -20,7 +20,6 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   void initState() {
     super.initState();
     if (widget.note != null) {
-      print(widget.note.noteDetail);
       setState(() {
         titleEditingController.text = widget.note.title;
         textEditingController.text = widget.note.noteDetail;
