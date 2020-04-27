@@ -22,6 +22,8 @@ class _HomePageState extends State<HomePage> {
         return AllNotesPage();
       case 1:
         return Container();
+      default:
+        return NoteListPage(i - 2);
     }
   }
 
@@ -41,8 +43,17 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => NoteDetailPage()));
+              if (_selectedDrawerIndex == 0 || _selectedDrawerIndex == 1) {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => NoteDetailPage()));
+              } else {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => NoteDetailPage(
+                              belongedNotebookId: _selectedDrawerIndex - 2,
+                            )));
+              }
             },
           ),
         ],
@@ -101,7 +112,8 @@ class _HomePageState extends State<HomePage> {
                                 color: snapshot.data[index].color,
                               ),
                               title: Text(snapshot.data[index].title),
-                              onTap: () => selectDrawerOption(snapshot.data[index].id + 2),
+                              onTap: () => selectDrawerOption(
+                                  snapshot.data[index].id + 2),
                             ),
                           );
                         },
@@ -137,6 +149,7 @@ class _HomePageState extends State<HomePage> {
 
   selectDrawerOption(int i) {
     setState(() => _selectedDrawerIndex = i);
+    print("Selected drawer: $_selectedDrawerIndex");
     Navigator.pop(context);
   }
 }
@@ -185,19 +198,18 @@ class _AllNotesPageState extends State<AllNotesPage> {
 }
 
 class NoteListPage extends StatefulWidget {
-  final int drawerPosition;
-  NoteListPage(this.drawerPosition);
+  final int notebookId;
+  NoteListPage(this.notebookId);
   @override
   _NoteListPageState createState() => _NoteListPageState();
 }
 
 class _NoteListPageState extends State<NoteListPage> {
-  // int noteId = widget.drawerPosition -2;
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: NoteDatabaseHelper.instance
-          .queryNoteByNotebook(widget.drawerPosition - 2),
+      future:
+          NoteDatabaseHelper.instance.queryNoteByNotebook(widget.notebookId),
       builder: (BuildContext context, AsyncSnapshot<List<Note>> snapshot) {
         if (snapshot.hasData) {
           return ListView.builder(

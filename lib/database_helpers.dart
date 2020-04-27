@@ -21,7 +21,7 @@ class Note {
   String title;
   DateTime dateTimeCreated;
   String noteDetail;
-  String belongedNotebookId;
+  int belongedNotebookId;
 
   Note(
       {this.id,
@@ -134,7 +134,7 @@ class NoteDatabaseHelper {
   Future<List<Note>> queryNoteByNotebook(int belongedNotebookId) async {
     final db = await database;
     var res = await db.query(tableNote,
-        where: "belongedNotebookId", whereArgs: [belongedNotebookId]);
+        where: "belongedNotebookId = ?", whereArgs: [belongedNotebookId]);
     List<Note> list =
         res.isNotEmpty ? res.map((note) => Note.fromMap(note)).toList() : [];
     return list;

@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 
 class NoteDetailPage extends StatefulWidget {
   final Note note;
-  NoteDetailPage({this.note});
+  final int belongedNotebookId;
+  NoteDetailPage({this.note, this.belongedNotebookId});
   @override
   _NoteDetailPageState createState() => _NoteDetailPageState();
 }
@@ -94,6 +95,11 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
         title: titleEditingController.text,
         dateTimeCreated: DateTime.now(),
         noteDetail: textEditingController.text);
+    if (widget.belongedNotebookId != null) {
+      note.belongedNotebookId = widget.belongedNotebookId;
+    }
+
+    print("Inserted notebook's id: ${note.belongedNotebookId}");
     NoteDatabaseHelper helper = NoteDatabaseHelper.instance;
     helper.insert(note);
   }
