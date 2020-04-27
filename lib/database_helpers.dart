@@ -146,6 +146,13 @@ class NoteDatabaseHelper {
         where: '_id = ?', whereArgs: [note.id]);
     return id;
   }
+
+  Future<int> deleteNote(int id) async {
+    final db = await database;
+    int deletedId =
+        await db.delete(tableNote, where: "_id = ?", whereArgs: [id]);
+    return deletedId;
+  }
 }
 
 class NotebookDatabaseHelper {

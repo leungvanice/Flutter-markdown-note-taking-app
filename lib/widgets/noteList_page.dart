@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:markdown_editor/database_helpers.dart';
 
 import './createNotebook_page.dart';
@@ -175,6 +175,7 @@ class AllNotesPage extends StatefulWidget {
 }
 
 class _AllNotesPageState extends State<AllNotesPage> {
+    final SlidableController slidableController = SlidableController();
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -195,21 +196,50 @@ class _AllNotesPageState extends State<AllNotesPage> {
                     ),
                   );
                 },
-                child: ListTile(
-                  title: Text(snapshot.data[index].title),
-                  subtitle: Row(
-                    children: <Widget>[
-                      Expanded(
-                          child: getNotebookTitle(
-                              snapshot.data[index].belongedNotebookId)),
-                      SizedBox(
-                        width: 30,
-                      ),
-                      Text(DateFormat('MMMM dd yyyy')
-                          .format(snapshot.data[index].dateTimeCreated)),
-                    ],
+                child: Slidable(
+                  key: Key(index.toString()),
+                  controller: slidableController,
+                  actionPane: SlidableDrawerActionPane(),
+                  actionExtentRatio: 0.2,
+                  child: ListTile(
+                    title: Text(snapshot.data[index].title),
+                    subtitle: Text(DateFormat('MMMM dd yyyy')
+                        .format(snapshot.data[index].dateTimeCreated)),
                   ),
+                  secondaryActions: <Widget>[
+                    IconSlideAction(
+                      caption: 'More',
+                      color: Colors.black45,
+                      icon: Icons.more_horiz,
+                      onTap: () => print("More"),
+                    ),
+                    IconSlideAction(
+                      caption: 'Delete',
+                      color: Colors.red,
+                      icon: Icons.delete,
+                      onTap: () async {
+                        await NoteDatabaseHelper.instance
+                            .deleteNote(snapshot.data[index].id);
+                        setState(() {});
+                      },
+                    ),
+                  ],
                 ),
+                // child: ListTile(
+                //   title: Text(snapshot.data[index].title),
+                //   subtitle: Row(
+                //     children: <Widget>[
+                //       Expanded(
+                //           child: getNotebookTitle(
+                //               snapshot.data[index].belongedNotebookId)),
+                //       SizedBox(
+                //         width: 30,
+                //       ),
+                //       Text(DateFormat('MMMM dd yyyy')
+                //           .format(snapshot.data[index].dateTimeCreated)),
+                //     ],
+                //   ),
+                // ),
               );
             },
           );
@@ -242,6 +272,7 @@ class NoteListPage extends StatefulWidget {
 }
 
 class _NoteListPageState extends State<NoteListPage> {
+  final SlidableController slidableController = SlidableController();
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -263,10 +294,34 @@ class _NoteListPageState extends State<NoteListPage> {
                     ),
                   );
                 },
-                child: ListTile(
-                  title: Text(snapshot.data[index].title),
-                  subtitle: Text(DateFormat('MMMM dd yyyy')
-                      .format(snapshot.data[index].dateTimeCreated)),
+                child: Slidable(
+                  key: Key(index.toString()),
+                  controller: slidableController,
+                  actionPane: SlidableDrawerActionPane(),
+                  actionExtentRatio: 0.2,
+                  child: ListTile(
+                    title: Text(snapshot.data[index].title),
+                    subtitle: Text(DateFormat('MMMM dd yyyy')
+                        .format(snapshot.data[index].dateTimeCreated)),
+                  ),
+                  secondaryActions: <Widget>[
+                    IconSlideAction(
+                      caption: 'More',
+                      color: Colors.black45,
+                      icon: Icons.more_horiz,
+                      onTap: () => print("More"),
+                    ),
+                    IconSlideAction(
+                      caption: 'Delete',
+                      color: Colors.red,
+                      icon: Icons.delete,
+                      onTap: () async {
+                        await NoteDatabaseHelper.instance
+                            .deleteNote(snapshot.data[index].id);
+                        setState(() {});
+                      },
+                    ),
+                  ],
                 ),
               );
             },
