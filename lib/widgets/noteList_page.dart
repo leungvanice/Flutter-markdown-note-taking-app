@@ -15,6 +15,17 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedDrawerIndex = 0;
+  String _selectedNotebookName;
+  appBarTitle(int i) {
+    switch (i) {
+      case 0:
+        return Text("Markdown Editor");
+      case 1:
+        return Text("Trash");
+      default:
+        return Text(_selectedNotebookName);
+    }
+  }
 
   _getDrawerItemWidget(int i) {
     switch (i) {
@@ -38,7 +49,7 @@ class _HomePageState extends State<HomePage> {
             _scaffoldKey.currentState.openDrawer();
           },
         ),
-        title: Text("Markdown Editor"),
+        title: appBarTitle(_selectedDrawerIndex),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.add),
@@ -72,7 +83,7 @@ class _HomePageState extends State<HomePage> {
                 child: ListTile(
                   leading: Icon(Icons.description),
                   title: Text('All Notes'),
-                  onTap: () => selectDrawerOption(0),
+                  onTap: () => selectDrawerOption(0, ''),
                 ),
               ),
               Container(
@@ -84,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                 child: ListTile(
                   leading: Icon(Icons.delete),
                   title: Text('Trash'),
-                  onTap: () => selectDrawerOption(1),
+                  onTap: () => selectDrawerOption(1, ''),
                 ),
               ),
               Divider(),
@@ -113,7 +124,8 @@ class _HomePageState extends State<HomePage> {
                               ),
                               title: Text(snapshot.data[index].title),
                               onTap: () => selectDrawerOption(
-                                  snapshot.data[index].id + 2),
+                                  snapshot.data[index].id + 2,
+                                  snapshot.data[index].title),
                             ),
                           );
                         },
@@ -147,8 +159,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  selectDrawerOption(int i) {
-    setState(() => _selectedDrawerIndex = i);
+  selectDrawerOption(int i, String notebookTitle) {
+    setState(() {
+      _selectedNotebookName = notebookTitle;
+      _selectedDrawerIndex = i;
+    });
     print("Selected drawer: $_selectedDrawerIndex");
     Navigator.pop(context);
   }
@@ -182,15 +197,37 @@ class _AllNotesPageState extends State<AllNotesPage> {
                 },
                 child: ListTile(
                   title: Text(snapshot.data[index].title),
-                  subtitle: Text(DateFormat('MMMM dd')
-                      .add_jm()
-                      .format(snapshot.data[index].dateTimeCreated)),
+                  subtitle: Row(
+                    children: <Widget>[
+                      Expanded(
+                          child: getNotebookTitle(
+                              snapshot.data[index].belongedNotebookId)),
+                      SizedBox(
+                        width: 30,
+                      ),
+                      Text(DateFormat('MMMM dd yyyy')
+                          .format(snapshot.data[index].dateTimeCreated)),
+                    ],
+                  ),
                 ),
               );
             },
           );
         } else {
           return Container();
+        }
+      },
+    );
+  }
+
+  Widget getNotebookTitle(int id) {
+    return FutureBuilder(
+      future: NotebookDatabaseHelper.instance.queryNotebook(id),
+      builder: (BuildContext context, AsyncSnapshot<Notebook> snapshot) {
+        if (snapshot.hasData) {
+          return Text(snapshot.data.title);
+        } else {
+          return Text("No data");
         }
       },
     );
@@ -228,8 +265,7 @@ class _NoteListPageState extends State<NoteListPage> {
                 },
                 child: ListTile(
                   title: Text(snapshot.data[index].title),
-                  subtitle: Text(DateFormat('MMMM dd')
-                      .add_jm()
+                  subtitle: Text(DateFormat('MMMM dd yyyy')
                       .format(snapshot.data[index].dateTimeCreated)),
                 ),
               );

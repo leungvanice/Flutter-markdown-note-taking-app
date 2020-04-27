@@ -188,6 +188,12 @@ class NotebookDatabaseHelper {
     return id;
   }
 
+  Future<Notebook> queryNotebook(int id) async {
+    final db = await database;
+    var res = await db.query(tableNotebook, where: '_id = ?', whereArgs: [id]);
+    return res.isNotEmpty ? Notebook.fromMap(res.first) : Null;
+  }
+
   Future<List<Notebook>> queryAllNotebooks() async {
     Database db = await database;
     var res = await db.query(tableNotebook);
