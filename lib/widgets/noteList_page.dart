@@ -57,11 +57,11 @@ class _NoteListPageState extends State<NoteListPage> {
                     AsyncSnapshot<List<Notebook>> snapshot) {
                   if (snapshot.hasData) {
                     return Container(
-                      height: snapshot.data.length * 50.0 + 30,
+                      height: snapshot.data.length * 50.0,
                       child: ListView(
                         children: snapshot.data.map((notebook) {
                           return ListTile(
-                            leading: Icon(Icons.library_books),
+                            leading: Icon(Icons.library_books, color: notebook.color,),
                             title: Text(notebook.title),
                           );
                         }).toList(),
@@ -72,7 +72,7 @@ class _NoteListPageState extends State<NoteListPage> {
                   }
                 },
               ),
-
+              // + Add Notebook btn
               ListTile(
                 trailing: FlatButton(
                   child: Text(
