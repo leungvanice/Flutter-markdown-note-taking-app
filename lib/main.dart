@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: NoteListPage(),
+      home: HomePage(),
       theme: ThemeData(
         highlightColor: Colors.transparent,
         splashColor: Colors.transparent,
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       routes: {
-        '/note-list': (context) => NoteListPage(),
+        '/note-list': (context) => HomePage(),
       },
     );
   }

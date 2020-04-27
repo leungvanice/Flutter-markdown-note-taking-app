@@ -7,14 +7,24 @@ import './noteDetail_page.dart';
 
 import 'package:flutter/material.dart';
 
-class NoteListPage extends StatefulWidget {
+class HomePage extends StatefulWidget {
   @override
-  _NoteListPageState createState() => _NoteListPageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _NoteListPageState extends State<NoteListPage> {
+class _HomePageState extends State<HomePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedDrawerIndex = 0;
+
+  _getDrawerItemWidget(int i) {
+    switch (i) {
+      case 0:
+        return AllNotesPage();
+      case 1:
+        return Container();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,7 +90,8 @@ class _NoteListPageState extends State<NoteListPage> {
                         itemBuilder: (BuildContext context, int index) {
                           return Container(
                             decoration: BoxDecoration(
-                              color: (index + 2) == _selectedDrawerIndex
+                              color: (snapshot.data[index].id + 2) ==
+                                      _selectedDrawerIndex
                                   ? Colors.grey[300]
                                   : Colors.transparent,
                             ),
@@ -90,7 +101,7 @@ class _NoteListPageState extends State<NoteListPage> {
                                 color: snapshot.data[index].color,
                               ),
                               title: Text(snapshot.data[index].title),
-                              onTap: () => selectDrawerOption(index + 2),
+                              onTap: () => selectDrawerOption(snapshot.data[index].id + 2),
                             ),
                           );
                         },
@@ -120,43 +131,102 @@ class _NoteListPageState extends State<NoteListPage> {
           ),
         ),
       ),
-      body: FutureBuilder(
-        future: NoteDatabaseHelper.instance.queryAllNotes(),
-        builder: (BuildContext context, AsyncSnapshot<List<Note>> snapshot) {
-          if (snapshot.hasData) {
-            return ListView.builder(
-              itemCount: snapshot.data.length,
-              itemBuilder: (BuildContext context, int index) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => NoteDetailPage(
-                          note: snapshot.data[index],
-                        ),
-                      ),
-                    );
-                  },
-                  child: ListTile(
-                    title: Text(snapshot.data[index].title),
-                    subtitle: Text(DateFormat('MMMM dd')
-                        .add_jm()
-                        .format(snapshot.data[index].dateTimeCreated)),
-                  ),
-                );
-              },
-            );
-          } else {
-            return Container();
-          }
-        },
-      ),
+      body: _getDrawerItemWidget(_selectedDrawerIndex),
     );
   }
 
   selectDrawerOption(int i) {
     setState(() => _selectedDrawerIndex = i);
     Navigator.pop(context);
+  }
+}
+
+class AllNotesPage extends StatefulWidget {
+  @override
+  _AllNotesPageState createState() => _AllNotesPageState();
+}
+
+class _AllNotesPageState extends State<AllNotesPage> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: NoteDatabaseHelper.instance.queryAllNotes(),
+      builder: (BuildContext context, AsyncSnapshot<List<Note>> snapshot) {
+        if (snapshot.hasData) {
+          return ListView.builder(
+            itemCount: snapshot.data.length,
+            itemBuilder: (BuildContext context, int index) {
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NoteDetailPage(
+                        note: snapshot.data[index],
+                      ),
+                    ),
+                  );
+                },
+                child: ListTile(
+                  title: Text(snapshot.data[index].title),
+                  subtitle: Text(DateFormat('MMMM dd')
+                      .add_jm()
+                      .format(snapshot.data[index].dateTimeCreated)),
+                ),
+              );
+            },
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+}
+
+class NoteListPage extends StatefulWidget {
+  final int drawerPosition;
+  NoteListPage(this.drawerPosition);
+  @override
+  _NoteListPageState createState() => _NoteListPageState();
+}
+
+class _NoteListPageState extends State<NoteListPage> {
+  // int noteId = widget.drawerPosition -2;
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: NoteDatabaseHelper.instance
+          .queryNoteByNotebook(widget.drawerPosition - 2),
+      builder: (BuildContext context, AsyncSnapshot<List<Note>> snapshot) {
+        if (snapshot.hasData) {
+          return ListView.builder(
+            itemCount: snapshot.data.length,
+            itemBuilder: (BuildContext context, int index) {
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NoteDetailPage(
+                        note: snapshot.data[index],
+                      ),
+                    ),
+                  );
+                },
+                child: ListTile(
+                  title: Text(snapshot.data[index].title),
+                  subtitle: Text(DateFormat('MMMM dd')
+                      .add_jm()
+                      .format(snapshot.data[index].dateTimeCreated)),
+                ),
+              );
+            },
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
   }
 }

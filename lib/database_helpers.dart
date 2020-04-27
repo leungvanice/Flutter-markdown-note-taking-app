@@ -131,6 +131,15 @@ class NoteDatabaseHelper {
     return list;
   }
 
+  Future<List<Note>> queryNoteByNotebook(int belongedNotebookId) async {
+    final db = await database;
+    var res = await db.query(tableNote,
+        where: "belongedNotebookId", whereArgs: [belongedNotebookId]);
+    List<Note> list =
+        res.isNotEmpty ? res.map((note) => Note.fromMap(note)).toList() : [];
+    return list;
+  }
+
   Future<int> update(Note note) async {
     final db = await database;
     int id = await db.update(tableNote, note.toMap(),
