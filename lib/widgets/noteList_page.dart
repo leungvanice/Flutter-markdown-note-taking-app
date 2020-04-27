@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
       case 0:
         return AllNotesPage();
       case 1:
-        return Container();
+        return TrashListPage();
       default:
         return NoteListPage(i - 2);
     }
@@ -51,22 +51,55 @@ class _HomePageState extends State<HomePage> {
         ),
         title: appBarTitle(_selectedDrawerIndex),
         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              if (_selectedDrawerIndex == 0 || _selectedDrawerIndex == 1) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => NoteDetailPage()));
-              } else {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => NoteDetailPage(
-                              belongedNotebookId: _selectedDrawerIndex - 2,
-                            )));
-              }
-            },
-          ),
+          _selectedDrawerIndex == 1
+              ? FlatButton(
+                  child: Text("Clear All"),
+                  onPressed: () async {
+                    await showDialog(
+                      context: context,
+                      child: AlertDialog(
+                        title: Text("Delete All?"),
+                        content: Text("You can't recover them again."),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: Text("No"),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                          FlatButton(
+                            child: Text("Yes"),
+                            onPressed: () async {
+                              await TrashDatabaseHelper.instance.deleteAll();
+                              setState(() {});
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                )
+              : IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    if (_selectedDrawerIndex == 0 ||
+                        _selectedDrawerIndex == 1) {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => NoteDetailPage()));
+                    } else {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => NoteDetailPage(
+                                    belongedNotebookId:
+                                        _selectedDrawerIndex - 2,
+                                  )));
+                    }
+                  },
+                ),
         ],
       ),
       drawer: Drawer(
@@ -175,7 +208,7 @@ class AllNotesPage extends StatefulWidget {
 }
 
 class _AllNotesPageState extends State<AllNotesPage> {
-    final SlidableController slidableController = SlidableController();
+  final SlidableController slidableController = SlidableController();
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -218,28 +251,20 @@ class _AllNotesPageState extends State<AllNotesPage> {
                       color: Colors.red,
                       icon: Icons.delete,
                       onTap: () async {
+                        TrashNote trashNote = TrashNote(
+                            deletedDate: DateTime.now(),
+                            note: snapshot.data[index]);
+                        int insertedId = await TrashDatabaseHelper.instance
+                            .insert(trashNote);
+                        print(insertedId);
                         await NoteDatabaseHelper.instance
                             .deleteNote(snapshot.data[index].id);
+
                         setState(() {});
                       },
                     ),
                   ],
                 ),
-                // child: ListTile(
-                //   title: Text(snapshot.data[index].title),
-                //   subtitle: Row(
-                //     children: <Widget>[
-                //       Expanded(
-                //           child: getNotebookTitle(
-                //               snapshot.data[index].belongedNotebookId)),
-                //       SizedBox(
-                //         width: 30,
-                //       ),
-                //       Text(DateFormat('MMMM dd yyyy')
-                //           .format(snapshot.data[index].dateTimeCreated)),
-                //     ],
-                //   ),
-                // ),
               );
             },
           );
@@ -316,8 +341,83 @@ class _NoteListPageState extends State<NoteListPage> {
                       color: Colors.red,
                       icon: Icons.delete,
                       onTap: () async {
+                        TrashNote trashNote = TrashNote(
+                            deletedDate: DateTime.now(),
+                            note: snapshot.data[index]);
+                        int insertedId = await TrashDatabaseHelper.instance
+                            .insert(trashNote);
+                        print(insertedId);
                         await NoteDatabaseHelper.instance
                             .deleteNote(snapshot.data[index].id);
+                        setState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+}
+
+class TrashListPage extends StatefulWidget {
+  @override
+  _TrashListPageState createState() => _TrashListPageState();
+}
+
+class _TrashListPageState extends State<TrashListPage> {
+  final SlidableController slidableController = SlidableController();
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: TrashDatabaseHelper.instance.queryAllTrashNote(),
+      builder: (BuildContext context, AsyncSnapshot<List<TrashNote>> snapshot) {
+        if (snapshot.hasData) {
+          return ListView.builder(
+            itemCount: snapshot.data.length,
+            itemBuilder: (BuildContext context, int index) {
+              DateTime now = DateTime.now();
+              DateTime today = DateTime(now.year, now.month, now.day);
+              DateTime deletedDate = DateTime(
+                  snapshot.data[index].deletedDate.year,
+                  snapshot.data[index].deletedDate.month,
+                  snapshot.data[index].deletedDate.day);
+              int elapsedDays = (today.difference(deletedDate).inDays);
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NoteDetailPage(
+                        note: snapshot.data[index].note,
+                      ),
+                    ),
+                  );
+                },
+                child: Slidable(
+                  key: Key(index.toString()),
+                  controller: slidableController,
+                  actionPane: SlidableDrawerActionPane(),
+                  actionExtentRatio: 0.2,
+                  child: ListTile(
+                    title: Text(snapshot.data[index].note.title),
+                    subtitle: Text("${(30 - elapsedDays - 1).toString()} Days"),
+                  ),
+                  secondaryActions: <Widget>[
+                    IconSlideAction(
+                      caption: 'Recover',
+                      color: Colors.grey,
+                      icon: Icons.history,
+                      onTap: () async {
+                        Note note = snapshot.data[index].note;
+                        await NoteDatabaseHelper.instance.insert(note);
+                        await TrashDatabaseHelper.instance
+                            .delete(snapshot.data[index].id);
                         setState(() {});
                       },
                     ),

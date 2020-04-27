@@ -16,6 +16,9 @@ final String columnNotebookTitle = 'title';
 final String columnNotebookDateCreated = 'dateCreated';
 final String columnColorString = 'colorString';
 
+final String tableTrash = 'trash';
+final String columnDeletedDate = 'deletedDate';
+
 class Note {
   int id;
   String title;
@@ -77,6 +80,36 @@ class Notebook {
       'title': title,
       'dateCreated': dateCreated.toString(),
       'colorString': color.toString(),
+    };
+  }
+}
+
+class TrashNote {
+  int id;
+  DateTime deletedDate;
+  Note note;
+  TrashNote({this.id, this.deletedDate, this.note});
+
+  factory TrashNote.fromMap(Map<String, dynamic> map) {
+    Note note = Note(
+      title: map['title'],
+      dateTimeCreated: DateTime.parse(map['dateTimeCreated']),
+      noteDetail: map['noteDetail'],
+      belongedNotebookId: map['belongedNotebookId'],
+    );
+    return TrashNote(
+      id: map['_id'],
+      deletedDate: DateTime.parse(map['deletedDate']),
+      note: note,
+    );
+  }
+  Map<String, dynamic> toMap() {
+    return {
+      'deletedDate': deletedDate.toString(),
+      'title': note.title,
+      'dateTimeCreated': note.dateTimeCreated.toString(),
+      'noteDetail': note.noteDetail,
+      'belongedNotebookId': note.belongedNotebookId,
     };
   }
 }
@@ -208,5 +241,94 @@ class NotebookDatabaseHelper {
         ? res.map((notebook) => Notebook.fromMap(notebook)).toList()
         : [];
     return list;
+  }
+}
+
+class TrashDatabaseHelper {
+  static final _databaseName = "TrashDatabase.db";
+  static final _databaseVersion = 1;
+
+  TrashDatabaseHelper._privateConstructor();
+  static final TrashDatabaseHelper instance =
+      TrashDatabaseHelper._privateConstructor();
+
+  static Database _database;
+  Future<Database> get database async {
+    if (_database != null) return _database;
+    _database = await _initDatabase();
+    return _database;
+  }
+
+  _initDatabase() async {
+    // The path_provider plugin gets the right directory for Android or iOS.
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, _databaseName);
+    // Open the database. Can also add an onUpdate callback parameter.
+    return await openDatabase(path,
+        version: _databaseVersion, onCreate: _onCreate);
+  }
+
+  Future _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE $tableTrash (
+        $columnId INTEGER PRIMARY KEY, 
+        $columnDeletedDate TEXT NOT NULL,
+        $columnTitle TEXT NOT NULL, 
+        $columnDateTimeCreated TEXT NOT NULL, 
+        $columnNoteDetail TEXT, 
+        $columnBelongedNotebookId INTEGER
+      )
+    ''');
+  }
+
+  Future<int> insert(TrashNote trashNote) async {
+    final db = await database;
+    int id = await db.insert(tableTrash, trashNote.toMap());
+    return id;
+  }
+
+  Future<List<TrashNote>> queryAllTrashNote() async {
+    final db = await database;
+    var res = await db.query(tableTrash);
+    await deleteNoteOver30DaysInTrash();
+
+    List<TrashNote> list = res.isNotEmpty
+        ? res.map((note) => TrashNote.fromMap(note)).toList()
+        : [];
+    return list;
+  }
+
+  deleteNoteOver30DaysInTrash() async {
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    final db = await database;
+    var res = await db.query(tableTrash);
+    print(today.subtract(Duration(days: 30)));
+    List<TrashNote> list = res.isNotEmpty
+        ? res.map((note) => TrashNote.fromMap(note)).toList()
+        : [];
+
+    list.forEach((note) {
+      DateTime deletedDate = DateTime(
+          note.deletedDate.year, note.deletedDate.month, note.deletedDate.day);
+      int elapsedDays = (today.difference(deletedDate).inDays);
+      int remainedDays = 30 - elapsedDays - 1;
+
+      if (remainedDays <= 1) {
+        delete(note.id);
+      }
+    });
+  }
+
+  Future<int> delete(int id) async {
+    final db = await database;
+    int deletedId =
+        await db.delete(tableTrash, where: "_id = ?", whereArgs: [id]);
+    return deletedId;
+  }
+
+  deleteAll() async {
+    final db = await database;
+    await db.execute("DELETE FROM $tableTrash");
   }
 }
