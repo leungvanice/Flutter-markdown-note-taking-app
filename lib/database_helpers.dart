@@ -9,6 +9,7 @@ final String columnId = '_id';
 final String columnTitle = 'title';
 final String columnDateTimeCreated = 'dateTimeCreated';
 final String columnNoteDetail = 'noteDetail';
+final String columnBelongedNotebookId = 'belongedNotebookId';
 
 final String tableNotebook = 'notebooks';
 final String columnNotebookTitle = 'title';
@@ -20,8 +21,14 @@ class Note {
   String title;
   DateTime dateTimeCreated;
   String noteDetail;
+  String belongedNotebookId;
 
-  Note({this.id, this.title, this.dateTimeCreated, this.noteDetail});
+  Note(
+      {this.id,
+      this.title,
+      this.dateTimeCreated,
+      this.noteDetail,
+      this.belongedNotebookId});
 
   factory Note.fromMap(Map<String, dynamic> map) {
     return Note(
@@ -29,6 +36,7 @@ class Note {
       title: map['title'],
       dateTimeCreated: DateTime.parse(map['dateTimeCreated']),
       noteDetail: map['noteDetail'],
+      belongedNotebookId: map['belongedNotebookId'],
     );
   }
   Map<String, dynamic> toMap() {
@@ -36,6 +44,7 @@ class Note {
       'title': title,
       'dateTimeCreated': dateTimeCreated.toString(),
       'noteDetail': noteDetail,
+      'belongedNotebookId': belongedNotebookId,
     };
   }
 }
@@ -102,7 +111,8 @@ class NoteDatabaseHelper {
         $columnId INTEGER PRIMARY KEY, 
         $columnTitle TEXT NOT NULL, 
         $columnDateTimeCreated TEXT NOT NULL, 
-        $columnNoteDetail TEXT
+        $columnNoteDetail TEXT, 
+        $columnBelongedNotebookId INTEGER
       )
     ''');
   }

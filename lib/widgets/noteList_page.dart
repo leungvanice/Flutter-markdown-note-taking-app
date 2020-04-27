@@ -14,6 +14,7 @@ class NoteListPage extends StatefulWidget {
 
 class _NoteListPageState extends State<NoteListPage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _selectedDrawerIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,13 +42,29 @@ class _NoteListPageState extends State<NoteListPage> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
-              ListTile(
-                leading: Icon(Icons.description),
-                title: Text('All Notes'),
+              Container(
+                decoration: BoxDecoration(
+                  color: 0 == _selectedDrawerIndex
+                      ? Colors.grey[300]
+                      : Colors.transparent,
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.description),
+                  title: Text('All Notes'),
+                  onTap: () => selectDrawerOption(0),
+                ),
               ),
-              ListTile(
-                leading: Icon(Icons.delete),
-                title: Text('Trash'),
+              Container(
+                decoration: BoxDecoration(
+                  color: 1 == _selectedDrawerIndex
+                      ? Colors.grey[300]
+                      : Colors.transparent,
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.delete),
+                  title: Text('Trash'),
+                  onTap: () => selectDrawerOption(1),
+                ),
               ),
               Divider(),
               // display notebooks
@@ -57,14 +74,26 @@ class _NoteListPageState extends State<NoteListPage> {
                     AsyncSnapshot<List<Notebook>> snapshot) {
                   if (snapshot.hasData) {
                     return Container(
-                      height: snapshot.data.length * 50.0,
-                      child: ListView(
-                        children: snapshot.data.map((notebook) {
-                          return ListTile(
-                            leading: Icon(Icons.library_books, color: notebook.color,),
-                            title: Text(notebook.title),
+                      height: snapshot.data.length * 50.0 + 10,
+                      child: ListView.builder(
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: (index + 2) == _selectedDrawerIndex
+                                  ? Colors.grey[300]
+                                  : Colors.transparent,
+                            ),
+                            child: ListTile(
+                              leading: Icon(
+                                Icons.library_books,
+                                color: snapshot.data[index].color,
+                              ),
+                              title: Text(snapshot.data[index].title),
+                              onTap: () => selectDrawerOption(index + 2),
+                            ),
                           );
-                        }).toList(),
+                        },
                       ),
                     );
                   } else {
@@ -124,5 +153,10 @@ class _NoteListPageState extends State<NoteListPage> {
         },
       ),
     );
+  }
+
+  selectDrawerOption(int i) {
+    setState(() => _selectedDrawerIndex = i);
+    Navigator.pop(context);
   }
 }
