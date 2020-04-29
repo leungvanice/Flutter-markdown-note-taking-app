@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:markdown_editor/database_helpers.dart';
 
@@ -241,12 +242,6 @@ class _AllNotesPageState extends State<AllNotesPage> {
                   ),
                   secondaryActions: <Widget>[
                     IconSlideAction(
-                      caption: 'More',
-                      color: Colors.black45,
-                      icon: Icons.more_horiz,
-                      onTap: () => print("More"),
-                    ),
-                    IconSlideAction(
                       caption: 'Delete',
                       color: Colors.red,
                       icon: Icons.delete,
@@ -330,12 +325,6 @@ class _NoteListPageState extends State<NoteListPage> {
                         .format(snapshot.data[index].dateTimeCreated)),
                   ),
                   secondaryActions: <Widget>[
-                    IconSlideAction(
-                      caption: 'More',
-                      color: Colors.black45,
-                      icon: Icons.more_horiz,
-                      onTap: () => print("More"),
-                    ),
                     IconSlideAction(
                       caption: 'Delete',
                       color: Colors.red,

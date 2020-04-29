@@ -13,18 +13,51 @@ class NoteDetailPage extends StatefulWidget {
   _NoteDetailPageState createState() => _NoteDetailPageState();
 }
 
-class _NoteDetailPageState extends State<NoteDetailPage> {
+class _NoteDetailPageState extends State<NoteDetailPage>
+    with WidgetsBindingObserver {
   final TextEditingController titleEditingController = TextEditingController();
   final TextEditingController textEditingController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.note != null) {
       setState(() {
         titleEditingController.text = widget.note.title;
         textEditingController.text = widget.note.noteDetail;
       });
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.detached:
+        widget.note == null ? save() : update();
+        print("Detached");
+        break;
+      case AppLifecycleState.paused:
+        widget.note == null ? save() : update();
+        print("paused");
+
+        break;
+      case AppLifecycleState.inactive:
+        widget.note == null ? save() : update();
+
+        print("inactive");
+
+        break;
+      case AppLifecycleState.resumed:
+        print("resumed");
+        break;
     }
   }
 
@@ -91,8 +124,19 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   }
 
   save() async {
+    String noteTitle;
+    if (titleEditingController.text.isNotEmpty) {
+      noteTitle = titleEditingController.text;
+    } else {
+      if (titleEditingController.text.isEmpty &&
+          textEditingController.text.isNotEmpty) {
+        noteTitle = textEditingController.text;
+      } else {
+        noteTitle = '(Blank note)';
+      }
+    }
     Note note = Note(
-        title: titleEditingController.text,
+        title: noteTitle,
         dateTimeCreated: DateTime.now(),
         noteDetail: textEditingController.text);
     if (widget.belongedNotebookId != null) {
@@ -105,9 +149,20 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   }
 
   update() async {
+    String noteTitle;
+    if (titleEditingController.text.isNotEmpty) {
+      noteTitle = titleEditingController.text;
+    } else {
+      if (titleEditingController.text.isEmpty &&
+          textEditingController.text.isNotEmpty) {
+        noteTitle = textEditingController.text;
+      } else {
+        noteTitle = '(Blank note)';
+      }
+    }
     Note note = Note(
       id: widget.note.id,
-      title: titleEditingController.text,
+      title: noteTitle,
       dateTimeCreated: widget.note.dateTimeCreated,
       noteDetail: textEditingController.text,
     );
