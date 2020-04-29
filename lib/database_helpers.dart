@@ -242,6 +242,15 @@ class NotebookDatabaseHelper {
         : [];
     return list;
   }
+
+  Future<int> updateNotebookTitle(int id, String newTitle) async {
+    final db = await database;
+    Notebook notebook = await queryNotebook(id);
+    notebook.title = newTitle;
+    var res = await db.update(tableNotebook, notebook.toMap(),
+        where: "_id = ?", whereArgs: [id]);
+    return res;
+  }
 }
 
 class TrashDatabaseHelper {

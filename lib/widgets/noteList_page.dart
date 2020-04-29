@@ -16,7 +16,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedDrawerIndex = 0;
+
+  TextEditingController notebookTitleController = TextEditingController();
   String _selectedNotebookName;
+  int _selectedNotebookId;
   appBarTitle(int i) {
     switch (i) {
       case 0:
@@ -24,7 +27,21 @@ class _HomePageState extends State<HomePage> {
       case 1:
         return Text("Trash");
       default:
-        return Text(_selectedNotebookName);
+        notebookTitleController.text = _selectedNotebookName;
+        return TextField(
+          controller: notebookTitleController,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+          onSubmitted: (txt) async {
+            int updatedId = await NotebookDatabaseHelper.instance
+                .updateNotebookTitle(_selectedNotebookId, txt);
+            print("Updated $updatedId");
+            setState(() {});
+          },
+          decoration: InputDecoration(
+            border: InputBorder.none,
+          ),
+        );
     }
   }
 
@@ -117,7 +134,7 @@ class _HomePageState extends State<HomePage> {
                 child: ListTile(
                   leading: Icon(Icons.description),
                   title: Text('All Notes'),
-                  onTap: () => selectDrawerOption(0, ''),
+                  onTap: () => selectDrawerOption(0, '', 0),
                 ),
               ),
               Container(
@@ -129,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                 child: ListTile(
                   leading: Icon(Icons.delete),
                   title: Text('Trash'),
-                  onTap: () => selectDrawerOption(1, ''),
+                  onTap: () => selectDrawerOption(1, '', 0),
                 ),
               ),
               Divider(),
@@ -158,8 +175,10 @@ class _HomePageState extends State<HomePage> {
                               ),
                               title: Text(snapshot.data[index].title),
                               onTap: () => selectDrawerOption(
-                                  snapshot.data[index].id + 2,
-                                  snapshot.data[index].title),
+                                snapshot.data[index].id + 2,
+                                snapshot.data[index].title,
+                                snapshot.data[index].id,
+                              ),
                             ),
                           );
                         },
@@ -193,9 +212,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  selectDrawerOption(int i, String notebookTitle) {
+  selectDrawerOption(int i, String notebookTitle, int notebookId) {
     setState(() {
       _selectedNotebookName = notebookTitle;
+      _selectedNotebookId = notebookId;
       _selectedDrawerIndex = i;
     });
     print("Selected drawer: $_selectedDrawerIndex");
