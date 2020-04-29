@@ -1,4 +1,4 @@
-# markdown_editor
+# Flutter-markdown-note-taking-app
 
 A new Flutter project.
 
