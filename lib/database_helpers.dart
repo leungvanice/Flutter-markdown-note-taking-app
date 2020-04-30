@@ -251,6 +251,13 @@ class NotebookDatabaseHelper {
         where: "_id = ?", whereArgs: [id]);
     return res;
   }
+
+  Future<int> delete(int id) async {
+    final db = await database;
+    int deletedId =
+        await db.delete(tableNotebook, where: "_id = ?", whereArgs: [id]);
+    return deletedId;
+  }
 }
 
 class TrashDatabaseHelper {

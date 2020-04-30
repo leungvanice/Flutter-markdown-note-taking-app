@@ -169,6 +169,46 @@ class _HomePageState extends State<HomePage> {
                                   : Colors.transparent,
                             ),
                             child: ListTile(
+                              onLongPress: () async {
+                                await showDialog(
+                                  context: context,
+                                  child: AlertDialog(
+                                    title: Text("Delete notebook?"),
+                                    content: Text(
+                                        "The notes belonged to this notebook will also be deleted and you can't recover them. "),
+                                    actions: <Widget>[
+                                      FlatButton(
+                                        child: Text("No"),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                      FlatButton(
+                                        child: Text("Yes"),
+                                        onPressed: () async {
+                                          int id = await NotebookDatabaseHelper
+                                              .instance
+                                              .delete(snapshot.data[index].id);
+
+                                          List<Note> list =
+                                              await NoteDatabaseHelper
+                                                  .instance
+                                                  .queryNoteByNotebook(
+                                                      snapshot.data[index].id);
+                                          list.forEach((note) async {
+                                            await NoteDatabaseHelper.instance
+                                                .deleteNote(note.id);
+                                          });
+                                          print("$id deleted");
+
+                                          Navigator.pop(context);
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                               leading: Icon(
                                 Icons.library_books,
                                 color: snapshot.data[index].color,
