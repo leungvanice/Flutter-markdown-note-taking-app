@@ -165,6 +165,7 @@ class _NoteDetailPageState extends State<NoteDetailPage>
       title: noteTitle,
       dateTimeCreated: widget.note.dateTimeCreated,
       noteDetail: textEditingController.text,
+      belongedNotebookId: widget.note.belongedNotebookId,
     );
     int updatedId = await NoteDatabaseHelper.instance.update(note);
     print(updatedId);
