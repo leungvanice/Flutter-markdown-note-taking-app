@@ -160,6 +160,7 @@ class _HomePageState extends State<HomePage> {
                       height: snapshot.data.length * 50.0 + 10,
                       child: ListView.builder(
                         itemCount: snapshot.data.length,
+                        physics: NeverScrollableScrollPhysics(),
                         itemBuilder: (BuildContext context, int index) {
                           return Container(
                             decoration: BoxDecoration(
